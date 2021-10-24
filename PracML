@@ -1,0 +1,405 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "PracML.ipynb",
+      "provenance": [],
+      "collapsed_sections": [],
+      "authorship_tag": "ABX9TyOCvFI8LiPIBH2z6JEgtj2w",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "display_name": "R",
+      "name": "ir"
+    },
+    "language_info": {
+      "name": "R"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/gist/GuPep/1f073c4bf786dd3f48f39dd8c5b53ea4/pracml.ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "xykm3kBQcpvG",
+        "outputId": "3d56d8f1-b446-4d22-b082-3996a46a08b0"
+      },
+      "source": [
+        "install.packages(\"caret\")\n"
+      ],
+      "execution_count": 131,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "Installing package into ‘/usr/local/lib/R/site-library’\n",
+            "(as ‘lib’ is unspecified)\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "aOwOs8NWoKnj",
+        "outputId": "b377cee7-e660-4bcf-f067-f5f184f91203"
+      },
+      "source": [
+        "install.packages(\"randomForest\")"
+      ],
+      "execution_count": 132,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "Installing package into ‘/usr/local/lib/R/site-library’\n",
+            "(as ‘lib’ is unspecified)\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "lxgJkZXQd6h6",
+        "outputId": "62878dd8-c2fe-4c08-fe4e-976e5c4b9a2d"
+      },
+      "source": [
+        "install.packages(\"mice\")"
+      ],
+      "execution_count": 172,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "Installing package into ‘/usr/local/lib/R/site-library’\n",
+            "(as ‘lib’ is unspecified)\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "diYQrZNIee_z"
+      },
+      "source": [
+        "**Load the required libraries required**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "lMFeMsnbePU7",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "2941be98-8d15-4c82-980e-78a32b5bc13c"
+      },
+      "source": [
+        "library(caret)\n",
+        "library(mice)\n",
+        "library(randomForest)"
+      ],
+      "execution_count": 173,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "\n",
+            "Attaching package: ‘mice’\n",
+            "\n",
+            "\n",
+            "The following object is masked from ‘package:stats’:\n",
+            "\n",
+            "    filter\n",
+            "\n",
+            "\n",
+            "The following objects are masked from ‘package:base’:\n",
+            "\n",
+            "    cbind, rbind\n",
+            "\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "27Hrn80YfYwk"
+      },
+      "source": [
+        "**LOAD DATASET**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "4pqB-P_Yes6a",
+        "outputId": "1ca7adad-44be-42da-a071-7041b8152420"
+      },
+      "source": [
+        "trainingset <- read_csv(\"pml-training.csv\")\n",
+        "testingset <- read_csv(\"pml-testing.csv\")"
+      ],
+      "execution_count": 135,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "New names:\n",
+            "* `` -> ...1\n",
+            "\n",
+            "\u001b[1m\u001b[1mRows: \u001b[1m\u001b[22m\u001b[34m\u001b[34m19622\u001b[34m\u001b[39m \u001b[1m\u001b[1mColumns: \u001b[1m\u001b[22m\u001b[34m\u001b[34m160\u001b[34m\u001b[39m\n",
+            "\n",
+            "\u001b[36m──\u001b[39m \u001b[1m\u001b[1mColumn specification\u001b[1m\u001b[22m \u001b[36m────────────────────────────────────────────────────────\u001b[39m\n",
+            "\u001b[1mDelimiter:\u001b[22m \",\"\n",
+            "\u001b[31mchr\u001b[39m  (34): user_name, cvtd_timestamp, new_window, kurtosis_roll_belt, kurtos...\n",
+            "\u001b[32mdbl\u001b[39m (126): ...1, raw_timestamp_part_1, raw_timestamp_part_2, num_window, rol...\n",
+            "\n",
+            "\n",
+            "\u001b[36mℹ\u001b[39m Use \u001b[30m\u001b[47m\u001b[30m\u001b[47m`spec()`\u001b[47m\u001b[30m\u001b[49m\u001b[39m to retrieve the full column specification for this data.\n",
+            "\u001b[36mℹ\u001b[39m Specify the column types or set \u001b[30m\u001b[47m\u001b[30m\u001b[47m`show_col_types = FALSE`\u001b[47m\u001b[30m\u001b[49m\u001b[39m to quiet this message.\n",
+            "\n",
+            "New names:\n",
+            "* `` -> ...1\n",
+            "\n",
+            "\u001b[1m\u001b[1mRows: \u001b[1m\u001b[22m\u001b[34m\u001b[34m20\u001b[34m\u001b[39m \u001b[1m\u001b[1mColumns: \u001b[1m\u001b[22m\u001b[34m\u001b[34m160\u001b[34m\u001b[39m\n",
+            "\n",
+            "\u001b[36m──\u001b[39m \u001b[1m\u001b[1mColumn specification\u001b[1m\u001b[22m \u001b[36m────────────────────────────────────────────────────────\u001b[39m\n",
+            "\u001b[1mDelimiter:\u001b[22m \",\"\n",
+            "\u001b[31mchr\u001b[39m   (3): user_name, cvtd_timestamp, new_window\n",
+            "\u001b[32mdbl\u001b[39m  (57): ...1, raw_timestamp_part_1, raw_timestamp_part_2, num_window, rol...\n",
+            "\u001b[33mlgl\u001b[39m (100): kurtosis_roll_belt, kurtosis_picth_belt, kurtosis_yaw_belt, skewn...\n",
+            "\n",
+            "\n",
+            "\u001b[36mℹ\u001b[39m Use \u001b[30m\u001b[47m\u001b[30m\u001b[47m`spec()`\u001b[47m\u001b[30m\u001b[49m\u001b[39m to retrieve the full column specification for this data.\n",
+            "\u001b[36mℹ\u001b[39m Specify the column types or set \u001b[30m\u001b[47m\u001b[30m\u001b[47m`show_col_types = FALSE`\u001b[47m\u001b[30m\u001b[49m\u001b[39m to quiet this message.\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "6hgG7kHPfiWT"
+      },
+      "source": [
+        "**DATA PREPROCESSING AND DATA CLEANING**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 84
+        },
+        "id": "sts0wGS7foNL",
+        "outputId": "3eb4da6b-751f-41c6-db29-3c03fb90b32d"
+      },
+      "source": [
+        "#Check for missing data\n",
+        "sum(is.na(trainingset))\n",
+        "sum(is.na(testingset))\n"
+      ],
+      "execution_count": 136,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "Warning message:\n",
+            "“One or more parsing issues, see `problems()` for details”\n"
+          ]
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "[1] 1921614"
+            ],
+            "text/latex": "1921614",
+            "text/markdown": "1921614",
+            "text/html": [
+              "1921614"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "[1] 2000"
+            ],
+            "text/latex": "2000",
+            "text/markdown": "2000",
+            "text/html": [
+              "2000"
+            ]
+          },
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "985kL6ds6su-"
+      },
+      "source": [
+        "#Removal of first 7 columns of irrelevant data\n",
+        "trainingset <- trainingset[, 8:ncol(trainingset)]\n",
+        "testingset <- testingset[, 8:ncol(trainingset)]\n"
+      ],
+      "execution_count": 137,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "7s421mdTjUrL"
+      },
+      "source": [
+        "#Removal of NA columns\n",
+        "testing <- testingset[,which(unlist(lapply(testingset, function(x) !all(is.na(x)))))]\n",
+        "training <- training[,which(unlist(lapply(training, function(x) !all(is.na(x)))))]"
+      ],
+      "execution_count": 206,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "3aaabOpRKgCC"
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "dGBRc1aEw5zY"
+      },
+      "source": [
+        ""
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "A0hu51nb-nXW"
+      },
+      "source": [
+        "**PARTITION TRAINING DATA**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "W94fi33EoBCt"
+      },
+      "source": [
+        "set.seed(100)\n",
+        "\n",
+        "t_idx <- createDataPartition(training$classe, p=0.75, list=FALSE)\n",
+        "train <- training[t_idx,]\n",
+        "test <- new_training[-t_idx,]\n"
+      ],
+      "execution_count": 205,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "UPV7p3ylBc0t"
+      },
+      "source": [
+        "**TRAIN RANDOM FOREST MODEL** "
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 228
+        },
+        "id": "d23Xier0GoXi",
+        "outputId": "8f7e1c45-940e-4541-b48a-a77d8f8c7422"
+      },
+      "source": [
+        "model <- randomForest(classe ~ ., data=training, method=\"class\")\n",
+        "prediction <- predict(model, training, type = \"class\")\n",
+        "confusionMatrix(prediction, training$classe)"
+      ],
+      "execution_count": 200,
+          ]
+        },
+        {
+
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "4_OcXlmCJf7J"
+      },
+      "source": [
+        "**SUBMISSION**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "lguTRiO8JQXC"
+      },
+      "source": [
+        "for (i in 1:20) {\n",
+        "  p <- predict(model, training[i,])\n",
+        "  print(p)\n",
+        "}"
+      ],
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
